@@ -1,5 +1,5 @@
 ﻿
-public class SBSearchResult
+public class SbSearchResult
 {
     public Metadata metadata { get; set; }
     public Product[] products { get; set; }

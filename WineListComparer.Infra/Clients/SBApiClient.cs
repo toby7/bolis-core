@@ -1,15 +1,24 @@
 ﻿using System.Net.Http.Json;
+using WineListComparer.Core.Clients;
 
 namespace WineListComparer.Infra.Clients
 {
-    public sealed class SBApiClient : ISBClient
+    public sealed class SbApiClient : ISbApiClient
     {
-        public async Task<SBSearchResult> SearchAsync(string query)
+        private readonly HttpClient httpClient;
+
+        public SbApiClient(HttpClient httpClient)
         {
-            var httpClient = new HttpClient()
+            this.httpClient = httpClient;
+        }
+
+        public async Task<SbSearchResult> SearchAsync(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
             {
-                DefaultRequestHeaders = { { "Ocp-Apim-Subscription-Key", "" } }
-            };
+                return null;
+            }
+
             var uri = new Uri(
                 $"https://api-extern.systembolaget.se/sb-api-ecommerce/v1/productsearch/search?size=30&page=1&textQuery={query}");
 
@@ -17,15 +26,10 @@ namespace WineListComparer.Infra.Clients
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SBSearchResult>();
+                return await response.Content.ReadFromJsonAsync<SbSearchResult>();
             }
 
             return null;
         }
-    }
-
-    public interface ISBClient
-    {
-        Task<SBSearchResult> SearchAsync(string query);
     }
 }
