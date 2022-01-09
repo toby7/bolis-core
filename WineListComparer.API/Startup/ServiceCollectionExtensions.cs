@@ -1,4 +1,5 @@
 ﻿using WineListComparer.Core.Clients;
+using WineListComparer.Core.Parsers;
 using WineListComparer.Core.Services;
 using WineListComparer.Core.Settings;
 using WineListComparer.Infra.Clients;

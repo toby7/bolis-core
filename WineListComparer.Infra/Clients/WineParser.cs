@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using WineListComparer.Core.Clients;
-using WineListComparer.Core.Models;
+using WineListComparer.Core.Parsers;
 
 namespace WineListComparer.Infra.Clients;
 
@@ -155,9 +155,4 @@ public static class ExcludedWords
         "Rose",
         "Rosé",
     };
-}
-
-public interface IWineParser
-{
-    Task<string> Parse(string sentence);
 }

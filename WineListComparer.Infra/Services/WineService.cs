@@ -1,7 +1,7 @@
 ﻿using WineListComparer.Core.Clients;
 using WineListComparer.Core.Models;
+using WineListComparer.Core.Parsers;
 using WineListComparer.Core.Services;
-using WineListComparer.Infra.Clients;
 
 namespace WineListComparer.Infra.Services;
 
