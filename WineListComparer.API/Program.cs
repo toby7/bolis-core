@@ -20,7 +20,6 @@ app.UseHttpsRedirection();
 
 app.MapGet("/compare", async (IWineService wineService) =>
     {
-        // @"C:\Temp\vinlista1.jpg"
         await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
         var result = await wineService.ProcessWineList(fileStream);
 
@@ -46,12 +45,6 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
         await using var stream = file.OpenReadStream();
         
         var result = await wineService.ProcessWineList(stream);
-
-        //var sentences = await OCRService.ReadImage(@"C:\Temp\vinlista3.jpg");
-        //var tasks = sentences.Select(x => wineService.ProcessWineList(x));
-
-        //var hits = (await Task.WhenAll(tasks))
-        //    .Where(x => x is not null);
 
         return Results.Ok(result.Wines);
     })

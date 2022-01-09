@@ -1,7 +1,6 @@
-﻿namespace WineListComparer.Core.Clients
+﻿namespace WineListComparer.Core.Clients;
+
+public interface ISbApiClient
 {
-    public interface ISbApiClient
-    {
-        Task<SbSearchResult> SearchAsync(string query);
-    }
+    Task<SbSearchResult> SearchAsync(string query);
 }

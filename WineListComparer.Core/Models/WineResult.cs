@@ -1,7 +1,6 @@
-﻿namespace WineListComparer.Core.Models
+﻿namespace WineListComparer.Core.Models;
+
+public class WineResult
 {
-    public class WineResult
-    {
-        public IEnumerable<Wine> Wines { get; set; }
-    }
+    public IEnumerable<Wine> Wines { get; set; }
 }

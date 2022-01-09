@@ -1,9 +1,8 @@
 ﻿using WineListComparer.Core.Models;
 
-namespace WineListComparer.Core.Services
+namespace WineListComparer.Core.Services;
+
+public interface IWineService
 {
-    public interface IWineService
-    {
-        Task<WineResult> ProcessWineList(Stream stream);
-    }
+    Task<WineResult> ProcessWineList(Stream stream);
 }
