@@ -1,6 +1,8 @@
 ﻿using WineListComparer.Core.Clients;
+using WineListComparer.Core.Services;
 using WineListComparer.Core.Settings;
 using WineListComparer.Infra.Clients;
+using WineListComparer.Infra.Services;
 
 namespace WineListComparer.API.Startup;
 
@@ -10,7 +12,18 @@ public static class ServiceCollectionExtension
         this WebApplicationBuilder builder)
     {
         builder.Services.AddSbApiClient(builder.Configuration);
-        builder.Services.AddWineParser();
+        builder.Services.AddSingleton<IWineParser, WineParser>();
+        builder.Services.AddSingleton<IOCRService, OCRService>();
+        builder.Services.AddSingleton<IWineService, WineService>();
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddOptions(
+        this WebApplicationBuilder builder)
+    {
+        builder.Services.Configure<OCRSettings>(
+            builder.Configuration.GetSection("OCRSettings"));
 
         return builder;
     }
@@ -21,20 +34,12 @@ public static class ServiceCollectionExtension
     {
         services.AddHttpClient<ISbApiClient, SbApiClient>(httpClient =>
         {
-            var settings = configuration.GetSection("SbApiSettings").Get<SbApiSettings>();
+            var settings = configuration
+                .GetSection("SbApiSettings")
+                .Get<SbApiSettings>();
             httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", settings.Key);
             httpClient.DefaultRequestHeaders.Add("contact", settings.Contact);
         });
-
-        services.AddSingleton<IWineParser, WineParser>();
-
-        return services;
-    }
-
-    private static IServiceCollection AddWineParser(
-        this IServiceCollection services)
-    {
-        services.AddSingleton<IWineParser, WineParser>();
 
         return services;
     }

@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using WineListComparer.Core.Clients;
+using WineListComparer.Core.Models;
 
 namespace WineListComparer.Infra.Clients
 {
@@ -12,7 +13,7 @@ namespace WineListComparer.Infra.Clients
             this.sbClient = sbClient;
         }
 
-        public async Task<Wine> Parse(string sentence)
+        public async Task<string> Parse(string sentence)
         {
             var isSingleWord = sentence.Contains(' ');
 
@@ -54,32 +55,8 @@ namespace WineListComparer.Infra.Clients
                 sentence = Regex.Replace(sentence.Trim(), @"[^A-Za-z]$", "").Trim(); // any trailing non alphabet character
             }
 
-            //return null;
-            var searchResult = await sbClient.SearchAsync(sentence);
-            var hit = searchResult?.products?.FirstOrDefault();
+            return sentence;
 
-            if (hit is null)
-            {
-                return null;
-            }
-
-            var wineHit = new Wine()
-            {
-                Name = $"{hit.productNameBold} {hit.productNameThin}",
-                Price = hit.price.ToString(),
-                Vintage = hit.vintage,
-                SearchSentence = sentence,
-                Volume = hit.volume,
-                ProductNumber = hit.productNumber,
-                Origin = new Origin()
-                {
-                    Country = hit.country,
-                    Level1 = hit.originLevel1,
-                    Level2 = hit.categoryLevel2
-                }
-            };
-
-            return wineHit;
             // Fiska ut druva och årgång i varje sentence för att atcha mot sökning istllet för att ha med det i query
             // Räkna om ord förekommer ovanligt ofta i hela texten och testa då att skala bort dem
         }
@@ -182,30 +159,6 @@ namespace WineListComparer.Infra.Clients
 
     public interface IWineParser
     {
-        Task<Wine> Parse(string characters);
-    }
-
-    public class WineResult
-    {
-        IEnumerable<Wine> Wines { get; set; }
-    }
-
-    public class Wine
-    {
-        public string Name { get; set; }
-        public string Vintage { get; set; }
-        public string Price { get; set; }
-        public string ProductNumber { get; set; }
-        public string SearchSentence { get; set; }
-        public float Volume { get; set; }
-        public string Url => $"https://www.systembolaget.se/{ProductNumber}";
-        public Origin Origin { get; set; }
-    }
-
-    public class Origin
-    {
-        public string Country { get; set; }
-        public string Level1 { get; set; }
-        public string Level2 { get; set; }
+        Task<string> Parse(string sentence);
     }
 }

@@ -1,6 +1,5 @@
 using WineListComparer.API.Startup;
-using WineListComparer.Infra.Clients;
-using WineListComparer.Infra.CognitiveServices;
+using WineListComparer.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +8,6 @@ builder.Services.AddSwaggerGen();
 builder.AddInfrastructureServices();
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -20,30 +18,45 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/compare", async (IWineParser parser) =>
+app.MapGet("/compare", async (IWineService wineService) =>
     {
         // @"C:\Temp\vinlista1.jpg"
-        var sentences = await OCRService.ReadImage(@"C:\Temp\vinlista3.jpg");
-        var tasks = sentences.Select(x => parser.Parse(x));
+        await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
+        var result = await wineService.ProcessWineList(fileStream);
 
-        var hits = (await Task.WhenAll(tasks))
-            .Where(x => x is not null);
-
-        return hits;
+        return result;
     })
     .WithName("GetComparedWineList");
 
-app.MapPost("/compare2", async (IWineParser parser, IFormFile file) =>
+app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpRequest) =>
     {
-        var sentences = await OCRService.ReadImage(@"C:\Temp\vinlista3.jpg");
-        var tasks = sentences.Select(x => parser.Parse(x));
+        if (httpRequest.HasFormContentType is false)
+        {
+            return Results.BadRequest();
+        }
 
-        var hits = (await Task.WhenAll(tasks))
-            .Where(x => x is not null);
+        var form = await httpRequest.ReadFormAsync();
+        var file = form.Files["file"];
 
-        return hits;
+        if (file is null)
+        {
+            return Results.BadRequest();
+        }
+        
+        await using var stream = file.OpenReadStream();
+        
+        var result = await wineService.ProcessWineList(stream);
+
+        //var sentences = await OCRService.ReadImage(@"C:\Temp\vinlista3.jpg");
+        //var tasks = sentences.Select(x => wineService.ProcessWineList(x));
+
+        //var hits = (await Task.WhenAll(tasks))
+        //    .Where(x => x is not null);
+
+        return Results.Ok(result.Wines);
     })
-    .WithName("GetComparedWineList2");
+    .WithName("GetComparedWineList2")
+    .Accepts<IFormFile>("multipart/form-data");
 
 app.Run();
 
