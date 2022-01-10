@@ -30,10 +30,10 @@ public sealed class WineService : IWineService
         var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
         var searchSentences = await Task.WhenAll(parserTasks);
         var searchTasks = searchSentences.Select(sentence => sbApiClient.SearchAsync(sentence));
-        var sbSearchResults = await Task.WhenAll(searchTasks);
+        var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x is not null);
 
         var wines = sbSearchResults
-            .Select(searchResult => searchResult.products.FirstOrDefault())
+            .Select(searchResult => searchResult?.products.FirstOrDefault())
             .Where(x => x is not null)
             .Select(hit => new Wine()
             {

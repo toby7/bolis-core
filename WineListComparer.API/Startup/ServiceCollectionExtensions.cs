@@ -12,6 +12,8 @@ public static class ServiceCollectionExtension
     public static WebApplicationBuilder AddInfrastructureServices(
         this WebApplicationBuilder builder)
     {
+        builder.AddOptions();
+
         builder.Services.AddSbApiClient(builder.Configuration);
         builder.Services.AddSingleton<IWineParser, WineParser>();
         builder.Services.AddSingleton<IOCRService, OCRService>();
