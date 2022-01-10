@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using WineListComparer.API.Startup;
 using WineListComparer.Core.Services;
 
@@ -11,7 +10,6 @@ builder.Services.AddCors(options => options.AddPolicy("AnyOrigin", o => o.AllowA
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

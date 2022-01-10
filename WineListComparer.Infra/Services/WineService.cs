@@ -40,7 +40,7 @@ public sealed class WineService : IWineService
                 Name = $"{hit.productNameBold} {hit.productNameThin}",
                 Price = hit.price.ToString(),
                 Vintage = hit.vintage,
-                SearchSentence = "Todo",//sentence,
+                SearchSentence = "Todo",
                 Volume = hit.volume,
                 ProductNumber = hit.productNumber,
                 Origin = new Origin()
