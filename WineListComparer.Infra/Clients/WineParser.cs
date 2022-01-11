@@ -56,7 +56,6 @@ public sealed class WineParser : IWineParser
         }
 
         return sentence;
-
         // Räkna om ord förekommer ovanligt ofta i hela texten och testa då att skala bort dem
     }
 }
