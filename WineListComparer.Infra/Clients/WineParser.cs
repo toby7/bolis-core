@@ -57,7 +57,6 @@ public sealed class WineParser : IWineParser
 
         return sentence;
 
-        // Fiska ut druva och årgång i varje sentence för att atcha mot sökning istllet för att ha med det i query
         // Räkna om ord förekommer ovanligt ofta i hela texten och testa då att skala bort dem
     }
 }
@@ -85,8 +84,7 @@ public static class ExcludedWords
     };
 
     public static string[] Removals = Countries;
-    //    \b(?:one|two|three)\b
-    //\b(word)\b
+
     public static string[] Singles =
     {
         "vin",
