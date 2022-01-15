@@ -42,6 +42,7 @@ public static class ServiceCollectionExtension
                 .Get<SbApiSettings>();
             httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", settings.Key);
             httpClient.DefaultRequestHeaders.Add("contact", settings.Contact);
+            httpClient.DefaultRequestVersion = new Version(2, 0);
         });
 
         return services;
