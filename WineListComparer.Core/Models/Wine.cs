@@ -10,4 +10,5 @@ public class Wine
     public float Volume { get; set; }
     public string Url => $"https://www.systembolaget.se/{ProductNumber}";
     public Origin Origin { get; set; }
+    public WineScore[] Scores { get; set; }
 }

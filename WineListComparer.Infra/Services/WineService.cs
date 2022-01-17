@@ -1,6 +1,7 @@
 ﻿using WineListComparer.Core.Clients;
 using WineListComparer.Core.Models;
 using WineListComparer.Core.Parsers;
+using WineListComparer.Core.Scrapers;
 using WineListComparer.Core.Services;
 
 namespace WineListComparer.Infra.Services;
@@ -10,12 +11,14 @@ public sealed class WineService : IWineService
     private readonly IOCRService ocrService;
     private readonly IWineParser parser;
     private readonly ISbApiClient sbApiClient;
+    private readonly IWineScoreScraper scoreScraper;
 
-    public WineService(IOCRService ocrService, IWineParser parser, ISbApiClient sbApiClient)
+    public WineService(IOCRService ocrService, IWineParser parser, ISbApiClient sbApiClient, IWineScoreScraper scoreScraper)
     {
         this.ocrService = ocrService;
         this.parser = parser;
         this.sbApiClient = sbApiClient;
+        this.scoreScraper = scoreScraper;
     }
 
     public async Task<WineResult> ProcessWineList(Stream stream)
@@ -29,27 +32,36 @@ public sealed class WineService : IWineService
 
         var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
         var searchSentences = await Task.WhenAll(parserTasks);
-        var searchTasks = searchSentences.Select(sentence => sbApiClient.SearchAsync(sentence));
-        var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x is not null);
+        var searchTasks = searchSentences.Take(4).Select(sentence => sbApiClient.SearchAsync(sentence));
+        var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x.Products != null && x.Products.Any());
 
-        var wines = sbSearchResults
-            .Select(searchResult => searchResult?.products.FirstOrDefault())
-            .Where(x => x is not null)
-            .Select(hit => new Wine()
+        var sbSearchHits = sbSearchResults
+            .Select(searchResult => new SbHit()
             {
-                Name = $"{hit.productNameBold} {hit.productNameThin}",
-                Price = hit.price.ToString(),
-                Vintage = hit.vintage,
-                SearchSentence = "Todo",
-                Volume = hit.volume,
-                ProductNumber = hit.productNumber,
+                SearchSentence = searchResult.SearchSentence,
+                Product = searchResult.Products?.FirstOrDefault() ?? new Product()
+            });
+
+
+        var wineTasks = sbSearchHits
+            .Select(async hit => new Wine()
+            {
+                Name = $"{hit.Product.productNameBold} {hit.Product.productNameThin}",
+                Price = hit.Product.price.ToString(),
+                Vintage = hit.Product.vintage,
+                SearchSentence = hit.SearchSentence,
+                Volume = hit.Product.volume,
+                ProductNumber = hit.Product.productNumber,
                 Origin = new Origin()
                 {
-                    Country = hit.country,
-                    Level1 = hit.originLevel1,
-                    Level2 = hit.categoryLevel2
-                }
+                    Country = hit.Product.country,
+                    Level1 = hit.Product.originLevel1,
+                    Level2 = hit.Product.categoryLevel2
+                },
+                Scores = new [] { await scoreScraper.Scrape(hit.SearchSentence) }
             });
+
+        var wines = await Task.WhenAll(wineTasks);
 
         var wineResult = new WineResult()
         {

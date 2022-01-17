@@ -16,7 +16,7 @@ public sealed class SbApiClient : ISbApiClient
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return null;
+            return new SbSearchResult();
         }
 
         var uri = new Uri(
@@ -26,9 +26,12 @@ public sealed class SbApiClient : ISbApiClient
 
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<SbSearchResult>();
+            var searchResult = await response.Content.ReadFromJsonAsync<SbSearchResult>();
+            searchResult.SearchSentence = query;
+
+            return searchResult;
         }
 
-        return null;
+        return new SbSearchResult();
     }
 }

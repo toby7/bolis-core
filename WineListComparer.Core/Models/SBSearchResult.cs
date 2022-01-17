@@ -1,10 +1,14 @@
 ﻿
+using System.Text.Json.Serialization;
+
 public class SbSearchResult
 {
-    public Metadata metadata { get; set; }
-    public Product[] products { get; set; }
-    public Filter[] filters { get; set; }
-    public object[] filterMenuItems { get; set; }
+    public string SearchSentence { get; set; }
+    [JsonPropertyName("products")]
+    public Product[] Products { get; set; }
+    //public Metadata metadata { get; set; }
+    //public Filter[] filters { get; set; }
+    //public object[] filterMenuItems { get; set; }
 }
 
 public class Metadata

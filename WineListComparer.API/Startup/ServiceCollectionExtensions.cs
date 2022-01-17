@@ -1,8 +1,10 @@
 ﻿using WineListComparer.Core.Clients;
 using WineListComparer.Core.Parsers;
+using WineListComparer.Core.Scrapers;
 using WineListComparer.Core.Services;
 using WineListComparer.Core.Settings;
 using WineListComparer.Infra.Clients;
+using WineListComparer.Infra.Scrapers;
 using WineListComparer.Infra.Services;
 
 namespace WineListComparer.API.Startup;
@@ -18,6 +20,7 @@ public static class ServiceCollectionExtension
         builder.Services.AddSingleton<IWineParser, WineParser>();
         builder.Services.AddSingleton<IOCRService, OCRService>();
         builder.Services.AddSingleton<IWineService, WineService>();
+        builder.Services.AddSingleton<IWineScoreScraper, VivinoScraper>();
 
         return builder;
     }
