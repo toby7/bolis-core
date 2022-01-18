@@ -1,6 +1,5 @@
 ﻿using WineListComparer.Core.Models;
 using WineListComparer.Core.Scrapers;
-using WineListComparer.Infra.Extensions;
 
 namespace WineListComparer.Infra.Scrapers;
 
@@ -33,7 +32,6 @@ public sealed class VivinoScraper : IWineScoreScraper
 
         htmlDoc.LoadHtml(firstHitNode.InnerHtml);
         
-
         var wineScore = new WineScore()
         {
             Supplier = this.Supplier,
