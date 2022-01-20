@@ -16,14 +16,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 app.UseCors();
 app.UseHttpsRedirection();
 
 app.MapGet("/compare", async (IWineService wineService, string test) =>
     {
         await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
-        var result = await wineService.ProcessWineList(fileStream);
+        var result = await wineService.ProcessWineList(fileStream as Stream);
 
         return result;
     })
@@ -36,15 +35,6 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
             return Results.BadRequest();
         }
 
-
-
-        //httpRequest.
-        //var uploads = "testpath";
-        //await using var fileStream = File.OpenWrite(uploads);
-        //await using var uploadStream = httpRequest.Body;
-        //await uploadStream.CopyToAsync(fileStream);
-        //return Results.Ok();
-
         var form = await httpRequest.ReadFormAsync();
         var file = form.Files["image"];
 
@@ -53,17 +43,12 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
             return Results.BadRequest("file is null");
         }
 
-        await using var fileStream = File.OpenWrite(file.FileName);
-        await using var uploadStream = file.OpenReadStream();
-        await uploadStream.CopyToAsync(fileStream);
+        await using var uploadStream = file.OpenReadStream(); // Move closer to usage?
 
-        return Results.Ok();
+        var result = await wineService.ProcessWineList(uploadStream);
 
-        var result = await wineService.ProcessWineList(httpRequest.Body);
-
-        return Results.Ok(result.Wines);
+         return Results.Ok(result.Wines);
     })
-    .WithName("GetComparedWineList2")
     .Accepts<IFormFile>("multipart/form-data")
     .RequireCors("AnyOrigin");
 
