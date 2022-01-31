@@ -19,7 +19,8 @@ public static class ServiceCollectionExtension
         builder.Services.AddSbApiClient(builder.Configuration);
         builder.Services.AddSingleton<IWineParser, WineParser>();
         builder.Services.AddSingleton<IOCRService, OCRService>();
-        builder.Services.AddSingleton<IWineService, WineService>();
+        //builder.Services.AddSingleton<IWineService, WineService>();
+        builder.Services.AddSingleton<IWineService, FakeWineService>();
         builder.Services.AddSingleton<IWineScoreScraper, VivinoScraper>();
 
         return builder;
