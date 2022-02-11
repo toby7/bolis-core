@@ -62,11 +62,7 @@ public sealed class WineService : IWineService
             });
 
         var wines = await Task.WhenAll(wineTasks);
-
-        var wineResult = new WineResult()
-        {
-            Wines = wines,
-        };
+        var wineResult = new WineResult(wines);
 
         return wineResult;
     }

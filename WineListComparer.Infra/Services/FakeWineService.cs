@@ -10,11 +10,9 @@ public class FakeWineService : IWineService
 
     public Task<WineResult> ProcessWineList(Stream stream)
     {
-        var wineResult = new WineResult
-        {
-            Wines = JsonConvert.DeserializeObject<IEnumerable<Wine>>(Json)
-        };
-                
+        var wines = JsonConvert.DeserializeObject<IEnumerable<Wine>>(Json);
+        var wineResult = new WineResult(wines);
+
         return Task.FromResult(wineResult);
     }
 }
