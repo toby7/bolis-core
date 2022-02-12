@@ -21,7 +21,7 @@ var app = builder.Build();
 app.UseCors();
 app.UseHttpsRedirection();
 
-app.MapGet("/compare", async (IWineService wineService, string test) =>
+app.MapGet("/compare", async (IWineService wineService) =>
     {
         //await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
         var result = await wineService.ProcessWineList(null);
