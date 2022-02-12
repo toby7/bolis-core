@@ -10,6 +10,8 @@ public class FakeWineService : IWineService
 
     public Task<WineResult> ProcessWineList(Stream stream)
     {
+        Task.Delay(3000);
+        Thread.Sleep(3000);
         var wines = JsonConvert.DeserializeObject<IEnumerable<Wine>>(Json);
         var wineResult = new WineResult(wines);
 

@@ -47,7 +47,7 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
 
         var result = await wineService.ProcessWineList(uploadStream);
 
-         return Results.Ok(result.Wines);
+         return Results.Ok(result);
     })
     .Accepts<IFormFile>("multipart/form-data")
     .RequireCors("AnyOrigin");
