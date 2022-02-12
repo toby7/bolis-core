@@ -3,9 +3,9 @@ using WineListComparer.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddCors(options => options.AddPolicy("AnyOrigin", o => o
     .AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.AddInfrastructureServices();
