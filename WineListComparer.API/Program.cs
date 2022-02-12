@@ -6,23 +6,24 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.AddInfrastructureServices();
-builder.Services.AddCors(options => options.AddPolicy("AnyOrigin", o => o.AllowAnyOrigin()));
+builder.Services.AddCors(options => options.AddPolicy("AnyOrigin", o => o
+    .AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseCors();
 app.UseHttpsRedirection();
 
 app.MapGet("/compare", async (IWineService wineService, string test) =>
     {
-        await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
-        var result = await wineService.ProcessWineList(fileStream as Stream);
+        //await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
+        var result = await wineService.ProcessWineList(null);
 
         return result;
     })
