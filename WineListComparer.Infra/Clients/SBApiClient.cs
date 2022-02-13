@@ -24,14 +24,11 @@ public sealed class SbApiClient : ISbApiClient
 
         var response = await httpClient.GetAsync(uri);
 
-        if (response.IsSuccessStatusCode)
-        {
-            var searchResult = await response.Content.ReadFromJsonAsync<SbSearchResult>();
-            searchResult.SearchSentence = query;
+        if (response.IsSuccessStatusCode is false) return new SbSearchResult();
 
-            return searchResult;
-        }
+        var searchResult = await response.Content.ReadFromJsonAsync<SbSearchResult>();
+        searchResult.SearchSentence = query;
 
-        return new SbSearchResult();
+        return searchResult;
     }
 }

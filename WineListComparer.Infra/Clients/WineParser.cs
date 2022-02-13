@@ -1,18 +1,10 @@
 ﻿using System.Text.RegularExpressions;
-using WineListComparer.Core.Clients;
 using WineListComparer.Core.Parsers;
 
 namespace WineListComparer.Infra.Clients;
 
 public sealed class WineParser : IWineParser
 {
-    private readonly ISbApiClient sbClient;
-
-    public WineParser(ISbApiClient sbClient)
-    {
-        this.sbClient = sbClient;
-    }
-
     public async Task<string> Parse(string sentence)
     {
         var isSingleWord = sentence.Contains(' ');

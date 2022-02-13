@@ -14,8 +14,8 @@ var app = builder.Build();
 
 //if (app.Environment.IsDevelopment())
 //{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 //}
 
 app.UseCors();
@@ -23,12 +23,12 @@ app.UseHttpsRedirection();
 
 app.MapGet("/compare", async (IWineService wineService) =>
     {
-        //await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
-        var result = await wineService.ProcessWineList(null);
+        app.Logger.LogTrace("Running GET:Compare.");
+        // await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
+        var result = await wineService.ProcessWineList(new MemoryStream());
 
         return result;
-    })
-    .WithName("GetComparedWineList");
+    });
 
 app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpRequest) =>
     {
@@ -49,7 +49,7 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
 
         var result = await wineService.ProcessWineList(uploadStream);
 
-         return Results.Ok(result);
+        return Results.Ok(result);
     })
     .Accepts<IFormFile>("multipart/form-data")
     .RequireCors("AnyOrigin");
