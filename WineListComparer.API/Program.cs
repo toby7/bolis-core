@@ -1,4 +1,5 @@
 using WineListComparer.API.Startup;
+using WineListComparer.Core.Extensions;
 using WineListComparer.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,7 +46,9 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
             return Results.BadRequest("file is null");
         }
 
-        await using var uploadStream = file.OpenReadStream(); // Move closer to usage?
+        app.Logger.LogTrace($"Received image with size {file.Length.ToMegabytes()} mb.");
+
+        await using var uploadStream = file.OpenReadStream(); 
 
         var result = await wineService.ProcessWineList(uploadStream);
 

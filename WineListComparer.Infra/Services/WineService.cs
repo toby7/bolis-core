@@ -1,4 +1,5 @@
-﻿using WineListComparer.Core.Clients;
+﻿using Microsoft.Extensions.Logging;
+using WineListComparer.Core.Clients;
 using WineListComparer.Core.Models;
 using WineListComparer.Core.Parsers;
 using WineListComparer.Core.Scrapers;
@@ -8,17 +9,27 @@ namespace WineListComparer.Infra.Services;
 
 public sealed class WineService : IWineService
 {
+    private static readonly string NewLine = Environment.NewLine;
+    private static readonly string NewParagraph = $"{NewLine}{NewLine}";
+
     private readonly IOCRService ocrService;
     private readonly IWineParser parser;
     private readonly ISbApiClient sbApiClient;
     private readonly IWineScoreScraper scoreScraper;
+    private readonly ILogger<WineService> logger;
 
-    public WineService(IOCRService ocrService, IWineParser parser, ISbApiClient sbApiClient, IWineScoreScraper scoreScraper)
+    public WineService(
+        IOCRService ocrService,
+        IWineParser parser,
+        ISbApiClient sbApiClient,
+        IWineScoreScraper scoreScraper,
+        ILogger<WineService> logger)
     {
         this.ocrService = ocrService;
         this.parser = parser;
         this.sbApiClient = sbApiClient;
         this.scoreScraper = scoreScraper;
+        this.logger = logger;
     }
 
     public async Task<WineResult> ProcessWineList(Stream stream)
@@ -30,8 +41,17 @@ public sealed class WineService : IWineService
             return new WineResult();
         }
 
+        logger.LogTrace($"Number of sentences read from image: {sentences.Length}." +
+                        $" {NewParagraph}" +
+                        $"{sentences.Select(x => x + NewLine)}");
+
         var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
-        var searchSentences = await Task.WhenAll(parserTasks);
+        var searchSentences = (await Task.WhenAll(parserTasks)).Where(x => x is not null);
+
+        logger.LogTrace($"Number of sentences after parsing: {searchSentences.Count()}." +
+                        $" {NewParagraph}" +
+                        $"{searchSentences.Select(x => x + NewLine)}");
+
         var searchTasks = searchSentences.Take(4).Select(sentence => sbApiClient.SearchAsync(sentence));
         var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x.Products != null && x.Products.Any());
 
