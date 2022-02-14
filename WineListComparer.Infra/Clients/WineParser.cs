@@ -144,4 +144,36 @@ public static class ExcludedWords
         "Rose",
         "Rosé",
     };
+
+    //public static string[] Grapes = RedGrapes.Union(GreenGrapes).ToArray();
+
+    public static string[] RedGrapes =
+    {
+        "syrah",
+        "shiraz",
+        "cabernet sauvignon",
+        "tempranillo",
+        "nebiolo",
+        "carignan",
+        "grenache",
+        "mourvedre",
+        "pinot noir",
+        "zinfandel",
+        "malbec",
+        "barbera",
+        "Sangiovese",
+        "merlot",
+        "cabernet franc"
+    };
+
+    public static string[] GreenGrapes =
+    {
+        "riesling",
+        "chardonnay",
+        "sauvignon blanc",
+        "chenin blanc",
+        "rousanne",
+        "marsanne",
+        "semillion"
+    };
 }

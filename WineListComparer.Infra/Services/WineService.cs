@@ -52,7 +52,7 @@ public sealed class WineService : IWineService
                         $" {NewParagraph}" +
                         $"{string.Join(NewLine, searchSentences)}");
 
-        var searchTasks = searchSentences.Take(4).Select(sentence => sbApiClient.SearchAsync(sentence));
+        var searchTasks = searchSentences.Take(10).Select(sentence => sbApiClient.SearchAsync(sentence));
         var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x.Products != null && x.Products.Any());
 
         var sbSearchHits = sbSearchResults
@@ -61,7 +61,6 @@ public sealed class WineService : IWineService
                 SearchSentence = searchResult.SearchSentence,
                 Product = searchResult.Products?.FirstOrDefault() ?? new Product()
             });
-
 
         var wineTasks = sbSearchHits
             .Select(async hit => new Wine()
