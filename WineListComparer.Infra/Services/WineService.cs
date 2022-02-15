@@ -4,6 +4,12 @@ using WineListComparer.Core.Models;
 using WineListComparer.Core.Parsers;
 using WineListComparer.Core.Scrapers;
 using WineListComparer.Core.Services;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using System.IO;
+using Microsoft.Win32.SafeHandles;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using WineListComparer.Core.Extensions;
 
 namespace WineListComparer.Infra.Services;
 
@@ -34,7 +40,18 @@ public sealed class WineService : IWineService
 
     public async Task<WineResult> ProcessWineList(Stream stream)
     {
-        var sentences = await ocrService.ReadImage(stream);
+        var stream2 = new MemoryStream();
+
+        using var image = await SixLabors.ImageSharp.Image.LoadAsync(stream);
+        {
+            image.Mutate(x => x.Resize(1024, 768));
+            await image.SaveAsync(stream2, new JpegEncoder());
+        }
+
+        logger.LogTrace($"Image size after resize: {stream2.Length.ToMegabytes()}");
+
+        stream2.Seek(0, SeekOrigin.Begin);
+        var sentences = await ocrService.ReadImage(stream2);
 
         if (sentences is null || sentences.Length < 1)
         {

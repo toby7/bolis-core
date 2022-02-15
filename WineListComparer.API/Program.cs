@@ -48,8 +48,7 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
 
         app.Logger.LogTrace($"Received image with size {file.Length.ToMegabytes()} mb.");
 
-        await using var uploadStream = file.OpenReadStream(); 
-
+        await using var uploadStream = file.OpenReadStream();
         var result = await wineService.ProcessWineList(uploadStream);
 
         return Results.Ok(result);
