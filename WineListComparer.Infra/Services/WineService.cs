@@ -4,11 +4,8 @@ using WineListComparer.Core.Models;
 using WineListComparer.Core.Parsers;
 using WineListComparer.Core.Scrapers;
 using WineListComparer.Core.Services;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using System.IO;
-using Microsoft.Win32.SafeHandles;
-using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
 using WineListComparer.Core.Extensions;
 
 namespace WineListComparer.Infra.Services;
@@ -45,7 +42,7 @@ public sealed class WineService : IWineService
         using var image = await SixLabors.ImageSharp.Image.LoadAsync(stream);
         {
             image.Mutate(x => x.Resize(1024, 768));
-            await image.SaveAsync(stream2, new JpegEncoder());
+            await image.SaveAsync(stream2, new PngEncoder());
         }
 
         logger.LogTrace($"Image size after resize: {stream2.Length.ToMegabytes()}");
@@ -59,17 +56,17 @@ public sealed class WineService : IWineService
         }
 
         logger.LogTrace($"Number of sentences read from image: {sentences.Length}." +
-                        $" {NewParagraph}" +
+                        $"{NewParagraph}" +
                         $"{string.Join(NewLine, sentences)}");
 
         var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
         var searchSentences = (await Task.WhenAll(parserTasks)).Where(x => x is not null);
 
         logger.LogTrace($"Number of sentences after parsing: {searchSentences.Count()}." +
-                        $" {NewParagraph}" +
+                        $"{NewParagraph}" +
                         $"{string.Join(NewLine, searchSentences)}");
 
-        var searchTasks = searchSentences.Take(10).Select(sentence => sbApiClient.SearchAsync(sentence));
+        var searchTasks = searchSentences.Take(15).Select(sentence => sbApiClient.SearchAsync(sentence));
         var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x.Products != null && x.Products.Any());
 
         var sbSearchHits = sbSearchResults
@@ -98,6 +95,11 @@ public sealed class WineService : IWineService
             });
 
         var wines = await Task.WhenAll(wineTasks);
+
+        logger.LogTrace($"Number of hits from SB: {wines.Length}" +
+                        $"{NewParagraph}" +
+                        $"{string.Join(NewLine, wines.Select(x => x.Name))}");
+
         var wineResult = new WineResult(wines);
 
         return wineResult;
