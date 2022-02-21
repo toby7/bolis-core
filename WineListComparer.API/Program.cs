@@ -24,7 +24,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/compare", async (IWineService wineService) =>
     {
-        app.Logger.LogTrace("Running GET:Compare.");
+        app.Logger.LogInformation("Running GET:Compare.");
         // await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
         var result = await wineService.ProcessWineList(new MemoryStream());
 
@@ -46,7 +46,7 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
             return Results.BadRequest("file is null");
         }
 
-        app.Logger.LogTrace($"Received image with size {file.Length.ToMegabytes()} mb.");
+        app.Logger.LogInformation($"Received image with size {file.Length.ToMegabytes()} mb.");
 
         await using var uploadStream = file.OpenReadStream();
         var result = await wineService.ProcessWineList(uploadStream);

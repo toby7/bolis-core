@@ -45,7 +45,7 @@ public sealed class WineService : IWineService
             await image.SaveAsync(stream2, new PngEncoder());
         }
 
-        logger.LogTrace($"Image size after resize: {stream2.Length.ToMegabytes()}");
+        logger.LogInformation($"Image size after resize: {stream2.Length.ToMegabytes()}");
 
         stream2.Seek(0, SeekOrigin.Begin);
         var sentences = await ocrService.ReadImage(stream2);
@@ -55,19 +55,20 @@ public sealed class WineService : IWineService
             return new WineResult();
         }
 
-        logger.LogTrace($"Number of sentences read from image: {sentences.Length}." +
-                        $"{NewParagraph}" +
-                        $"{string.Join(NewLine, sentences)}");
+        logger.LogInformation($"Number of sentences read from image: {sentences.Length}." +
+                              $"{NewParagraph}" +
+                              $"{string.Join(NewLine, sentences)}");
 
         var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
         var searchSentences = (await Task.WhenAll(parserTasks)).Where(x => x is not null);
 
-        logger.LogTrace($"Number of sentences after parsing: {searchSentences.Count()}." +
-                        $"{NewParagraph}" +
-                        $"{string.Join(NewLine, searchSentences)}");
+        logger.LogInformation($"Number of sentences after parsing: {searchSentences.Count()}." +
+                              $"{NewParagraph}" +
+                              $"{string.Join(NewLine, searchSentences)}");
 
         var searchTasks = searchSentences.Take(15).Select(sentence => sbApiClient.SearchAsync(sentence));
-        var sbSearchResults = (await Task.WhenAll(searchTasks)).Where(x => x.Products != null && x.Products.Any());
+        var sbSearchResults = (await Task.WhenAll(searchTasks))
+            .Where(x => x.Products != null && x.Products.Any());
 
         var sbSearchHits = sbSearchResults
             .Select(searchResult => new SbHit()
@@ -96,9 +97,9 @@ public sealed class WineService : IWineService
 
         var wines = await Task.WhenAll(wineTasks);
 
-        logger.LogTrace($"Number of hits from SB: {wines.Length}" +
-                        $"{NewParagraph}" +
-                        $"{string.Join(NewLine, wines.Select(x => x.Name))}");
+        logger.LogInformation($"Number of hits from SB: {wines.Length}" +
+                              $"{NewParagraph}" +
+                              $"{string.Join(NewLine, wines.Select(x => x.Name))}");
 
         var wineResult = new WineResult(wines);
 
