@@ -156,14 +156,31 @@ public static class ExcludedWords
         "nebiolo",
         "carignan",
         "grenache",
+        "garnacha",
         "mourvedre",
+        "mourvédre",
+        "monastrell",
+        "mataro",
         "pinot noir",
+        "spätburgunder",
         "zinfandel",
+        "primitivo",
         "malbec",
         "barbera",
-        "Sangiovese",
+        "sangiovese",
         "merlot",
-        "cabernet franc"
+        "cabernet franc",
+        "corvina",
+        "rondinella",
+        "petit verdot",
+        "petit sirah",
+        "aglianico",
+        "dolcetto",
+        "gamay",
+
+        
+
+
     };
 
     public static string[] GreenGrapes =
@@ -174,6 +191,18 @@ public static class ExcludedWords
         "chenin blanc",
         "rousanne",
         "marsanne",
-        "semillion"
+        "semillion",
+        "glera",
+        "gruner veltliner",
+        "grüner veltliner",
+        "gewurstraminer",
+        "pinot gris",
+        "pinot grigio",
+        "arneis",
+        "muscat",
+        "pinot blanc",
+        "trebbiano"
+
+
     };
 }
