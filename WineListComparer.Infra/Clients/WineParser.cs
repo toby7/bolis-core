@@ -138,7 +138,7 @@ public static class ExcludedWords
         "choklad",
         "friskt",
         "kryddigt"
-    };
+    }.Concat(Grapes);
 
     public static IEnumerable<string> Regions = new []
     {
@@ -216,9 +216,57 @@ public static class ExcludedWords
         "muscat",
         "pinot blanc",
         "trebbiano"
-
-
     };
+
+    public static IEnumerable<string> Singles = new[]
+    {
+        "vin",
+        "viner",
+        "wine",
+        "wines",
+        "vitt",
+        "vita",
+        "white",
+        "whites",
+        "rött",
+        "röda",
+        "red",
+        "reds",
+        "rosa",
+        "rose",
+        "rosé",
+        "bubbel",
+        "mousserande",
+        "sparkling",
+        "bubbles",
+        "blåbär",
+        "jordgubb",
+        "plommon",
+        "körsbär",
+        "kaffe",
+        "viol",
+        "citron",
+        "citrus",
+        "smak",
+        "lime",
+        "blommor",
+        "mineral",
+        "sälta",
+        "vanilj",
+        "fat",
+        "ekfat",
+        "bär",
+        "lingon",
+        "tranbär",
+        "hallon",
+        "frukt",
+        "fylligt",
+        "medelfylligt",
+        "svartpeppar",
+        "choklad",
+        "friskt",
+        "kryddigt"
+    }.Concat(Grapes);
 
     public static IEnumerable<string> Grapes = RedGrapes.Concat(GreenGrapes);
 
