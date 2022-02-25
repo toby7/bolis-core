@@ -4,9 +4,6 @@ using WineListComparer.Core.Models;
 using WineListComparer.Core.Parsers;
 using WineListComparer.Core.Scrapers;
 using WineListComparer.Core.Services;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Png;
-using WineListComparer.Core.Extensions;
 
 namespace WineListComparer.Infra.Services;
 
@@ -35,20 +32,9 @@ public sealed class WineService : IWineService
         this.logger = logger;
     }
 
-    public async Task<WineResult> ProcessWineList(Stream stream)
+    public async Task<WineResult> Process(Stream stream)
     {
-        var stream2 = new MemoryStream();
-
-        using var image = await SixLabors.ImageSharp.Image.LoadAsync(stream);
-        {
-            image.Mutate(x => x.Resize(1024, 768));
-            await image.SaveAsync(stream2, new PngEncoder());
-        }
-
-        logger.LogInformation($"Image size after resize: {stream2.Length.ToMegabytes()}");
-
-        stream2.Seek(0, SeekOrigin.Begin);
-        var sentences = await ocrService.ReadImage(stream2);
+        var sentences = await ocrService.ReadImage(stream);
 
         if (sentences is null || sentences.Length < 1)
         {
@@ -66,7 +52,7 @@ public sealed class WineService : IWineService
                               $"{NewParagraph}" +
                               $"{string.Join(NewLine, searchSentences)}");
 
-        var searchTasks = searchSentences.Take(15).Select(sentence => sbApiClient.SearchAsync(sentence));
+        var searchTasks = searchSentences.Take(20).Select(sentence => sbApiClient.SearchAsync(sentence));
         var sbSearchResults = (await Task.WhenAll(searchTasks))
             .Where(x => x.Products != null && x.Products.Any());
 

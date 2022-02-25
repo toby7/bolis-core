@@ -4,5 +4,5 @@ namespace WineListComparer.Core.Services;
 
 public interface IWineService
 {
-    Task<WineResult> ProcessWineList(Stream stream);
+    Task<WineResult> Process(Stream stream);
 }

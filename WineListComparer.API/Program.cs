@@ -1,3 +1,4 @@
+using WineListComparer.API;
 using WineListComparer.API.Startup;
 using WineListComparer.Core.Extensions;
 using WineListComparer.Core.Services;
@@ -21,12 +22,13 @@ app.UseSwaggerUI();
 
 app.UseCors();
 app.UseHttpsRedirection();
+app.UseMiddleware<ImageResizeMiddleware>();
 
 app.MapGet("/compare", async (IWineService wineService) =>
     {
         app.Logger.LogInformation("Running GET:Compare.");
         // await using var fileStream = new FileStream(@"C:\Temp\vinlista3.jpg", FileMode.Open);
-        var result = await wineService.ProcessWineList(new MemoryStream());
+        var result = await wineService.Process(new MemoryStream());
 
         return result;
     });
@@ -49,7 +51,7 @@ app.MapPost("/compare2", async (IWineService wineService, HttpRequest httpReques
         app.Logger.LogInformation($"Received image with size {file.Length.ToMegabytes()} mb.");
 
         await using var uploadStream = file.OpenReadStream();
-        var result = await wineService.ProcessWineList(uploadStream);
+        var result = await wineService.Process(uploadStream);
 
         return Results.Ok(result);
     })

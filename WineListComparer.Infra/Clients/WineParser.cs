@@ -226,13 +226,15 @@ public static class WineWordLibrary
         "friskt",
         "kryddigt",
         "sött",
+        "mogen"
 
     }.Concat(Grapes);
 
     public static IEnumerable<string> Classifications = new[]
     {
         "docg",
-        "doc"
+        "doc",
+        "igt toskana"
     };
 
     public static IEnumerable<string> Irrelevants = new[]
