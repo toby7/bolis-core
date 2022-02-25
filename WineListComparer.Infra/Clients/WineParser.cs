@@ -20,7 +20,7 @@ public sealed class WineParser : IWineParser
             {
                 return string.Empty;
             }
-            if (ExcludedWords.Singles.Any(x => x.Equals(sentence, StringComparison.InvariantCultureIgnoreCase)))
+            if (WineWordLibrary.Singles.Any(x => x.Equals(sentence, StringComparison.InvariantCultureIgnoreCase)))
             {
                 return string.Empty;
             }
@@ -29,12 +29,12 @@ public sealed class WineParser : IWineParser
 
         sentence = Regex.Replace( // Replace specific words with empty string, ex a country should not be present in the name.
             sentence,
-            @$"\b({string.Join('|', ExcludedWords.Replacements)})\b",
+            @$"\b({string.Join('|', WineWordLibrary.Replacements)})\b",
             "",
             RegexOptions.IgnoreCase);
 
         var counter = 0;
-        foreach (var word in ExcludedWords.Singles) // terminate when sentence contains two "singles" or more. Most likely it's grape composition or such. Ex chardonnay, viogner 
+        foreach (var word in WineWordLibrary.Singles) // terminate when sentence contains two "singles" or more. Most likely it's grape composition or such. Ex chardonnay, viogner 
         {
             if (!sentence.Contains(word, StringComparison.InvariantCultureIgnoreCase)) continue;
             if (counter == 1)
@@ -44,26 +44,31 @@ public sealed class WineParser : IWineParser
             counter++;
         }
 
-        sentence = Regex.Replace(sentence, @"\d\d\d\d", "").Trim(); // Remove vintage
+        sentence = Regex.Replace(sentence, @"\(\d\d\d\d\)", "").Trim(); // Remove vintage, (2008)
+        sentence = Regex.Replace(sentence, @"\d\d\d\d", "").Trim(); // Remove vintage, 2008
         sentence = Regex.Replace(sentence, @"\d*(:-| :-)", ""); // any digit followed by :-, eg. "245:-" or "245 :-"
+
+        while (Regex.IsMatch(sentence, @"^[^A-Za-z]"))
+        {
+            sentence = Regex.Replace(sentence.Trim(), @"^[^A-Za-z]", "").Trim(); // starts with non alphabet character
+        }
 
         while (Regex.IsMatch(sentence, @"[^A-Za-z]$"))
         {
             sentence = Regex.Replace(sentence.Trim(), @"[^A-Za-z]$", "").Trim(); // any trailing non alphabet character
         }
 
-        if (ExcludedWords.NonWineSentences.Any(x => x.Equals(sentence, StringComparison.OrdinalIgnoreCase)))
+        if (WineWordLibrary.Noise.Any(x => x.Equals(sentence, StringComparison.OrdinalIgnoreCase))) 
         {
             return string.Empty;
         }
 
         return sentence;
-        // Räkna om ord förekommer ovanligt ofta i hela texten och testa då att skala bort dem
     }
 }
 
 
-public static class ExcludedWords
+public static class WineWordLibrary
 {
     public static IEnumerable<string> Countries = new []
     {
@@ -90,56 +95,6 @@ public static class ExcludedWords
         "hungary"
     };
 
-    public static IEnumerable<string> Singles = new []
-    {
-        "vin",
-        "viner",
-        "wine",
-        "wines",
-        "vitt",
-        "vita",
-        "white",
-        "whites",
-        "rött",
-        "röda",
-        "red",
-        "reds",
-        "rosa",
-        "rose",
-        "rosé",
-        "bubbel",
-        "mousserande",
-        "sparkling",
-        "bubbles",
-        "blåbär",
-        "jordgubb",
-        "plommon",
-        "körsbär",
-        "kaffe",
-        "viol",
-        "citron",
-        "citrus",
-        "smak",
-        "lime",
-        "blommor",
-        "mineral",
-        "sälta",
-        "vanilj",
-        "fat",
-        "ekfat",
-        "bär",
-        "lingon",
-        "tranbär",
-        "hallon",
-        "frukt",
-        "fylligt",
-        "medelfylligt",
-        "svartpeppar",
-        "choklad",
-        "friskt",
-        "kryddigt"
-    }.Concat(Grapes);
-
     public static IEnumerable<string> Regions = new []
     {
         "champagne",
@@ -154,6 +109,7 @@ public static class ExcludedWords
         "alsace",
         "tuscany",
         "toskana",
+        "kalifornien",
     };
 
     //public static IEnumerable<string> Replacements = new []
@@ -179,6 +135,7 @@ public static class ExcludedWords
         "monastrell",
         "mataro",
         "pinot noir",
+        "Pinot Meunier",
         "spätburgunder",
         "zinfandel",
         "primitivo",
@@ -217,6 +174,8 @@ public static class ExcludedWords
         "pinot blanc",
         "trebbiano"
     };
+
+    public static IEnumerable<string> Grapes = RedGrapes.Concat(GreenGrapes);
 
     public static IEnumerable<string> Singles = new[]
     {
@@ -265,10 +224,10 @@ public static class ExcludedWords
         "svartpeppar",
         "choklad",
         "friskt",
-        "kryddigt"
-    }.Concat(Grapes);
+        "kryddigt",
+        "sött",
 
-    public static IEnumerable<string> Grapes = RedGrapes.Concat(GreenGrapes);
+    }.Concat(Grapes);
 
     public static IEnumerable<string> Classifications = new[]
     {
@@ -290,10 +249,6 @@ public static class ExcludedWords
         "glass"
     };
 
-    public static IEnumerable<string> Noise = Singles
-        .Concat(Regions)
-        .Concat(Grapes);
-
     public static IEnumerable<string> Replacements = Countries.Concat(Classifications).Concat(Irrelevants);
 
     public static IEnumerable<string> NonWineSentences = new[]
@@ -305,4 +260,12 @@ public static class ExcludedWords
         "Cotes-du-Rhone",
         "cotes du rhone"
     };
+
+    public static IEnumerable<string> Noise = Singles
+        .Concat(NonWineSentences)
+        .Concat(Regions)
+        .Concat(Countries)
+        .Concat(Grapes)
+        .Concat(Replacements);
+
 }
