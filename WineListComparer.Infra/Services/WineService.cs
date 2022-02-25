@@ -60,7 +60,7 @@ public sealed class WineService : IWineService
                               $"{string.Join(NewLine, sentences)}");
 
         var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
-        var searchSentences = (await Task.WhenAll(parserTasks)).Where(x => x is not null);
+        var searchSentences = (await Task.WhenAll(parserTasks)).Where(x => !string.IsNullOrWhiteSpace(x));
 
         logger.LogInformation($"Number of sentences after parsing: {searchSentences.Count()}." +
                               $"{NewParagraph}" +

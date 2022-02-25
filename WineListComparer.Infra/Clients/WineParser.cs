@@ -7,24 +7,29 @@ public sealed class WineParser : IWineParser
 {
     public async Task<string> Parse(string sentence)
     {
-        var isSingleWord = sentence.Contains(' ');
+        if (sentence.StartsWith('(') && sentence.EndsWith(')')) // sentence is wrapped by (). Presumably grape composition.
+        {
+            return null;
+        }
+
+        var isSingleWord = !sentence.Contains(' ');
 
         if (isSingleWord)
         {
             if (Regex.IsMatch(sentence, @"^\d\d\d\d$")) // only vintage eg. "2016"
             {
-                return null;
+                return string.Empty;
             }
             if (ExcludedWords.Singles.Any(x => x.Equals(sentence, StringComparison.InvariantCultureIgnoreCase)))
             {
-                return null;
+                return string.Empty;
             }
             // call
         }
 
-        sentence = Regex.Replace(
+        sentence = Regex.Replace( // Replace specific words with empty string, ex a country should not be present in the name.
             sentence,
-            @$"\b({string.Join('|', ExcludedWords.Removals)})\b",
+            @$"\b({string.Join('|', ExcludedWords.Replacements)})\b",
             "",
             RegexOptions.IgnoreCase);
 
@@ -34,7 +39,7 @@ public sealed class WineParser : IWineParser
             if (!sentence.Contains(word, StringComparison.InvariantCultureIgnoreCase)) continue;
             if (counter == 1)
             {
-                return null;
+                return string.Empty;
             }
             counter++;
         }
@@ -47,6 +52,11 @@ public sealed class WineParser : IWineParser
             sentence = Regex.Replace(sentence.Trim(), @"[^A-Za-z]$", "").Trim(); // any trailing non alphabet character
         }
 
+        if (ExcludedWords.NonWineSentences.Any(x => x.Equals(sentence, StringComparison.OrdinalIgnoreCase)))
+        {
+            return string.Empty;
+        }
+
         return sentence;
         // Räkna om ord förekommer ovanligt ofta i hela texten och testa då att skala bort dem
     }
@@ -55,7 +65,7 @@ public sealed class WineParser : IWineParser
 
 public static class ExcludedWords
 {
-    public static string[] Countries =
+    public static IEnumerable<string> Countries = new []
     {
         "frankrike",
         "france",
@@ -71,12 +81,16 @@ public static class ExcludedWords
         "australia",
         "aus",
         "sydafrika",
-        "south africa"
+        "south africa",
+        "sa",
+        "argentina",
+        "argentine",
+        "arg",
+        "ungern",
+        "hungary"
     };
 
-    public static string[] Removals = Countries;
-
-    public static string[] Singles =
+    public static IEnumerable<string> Singles = new []
     {
         "vin",
         "viner",
@@ -97,33 +111,36 @@ public static class ExcludedWords
         "mousserande",
         "sparkling",
         "bubbles",
-        "france",
-        "frankrike",
-        "champagne",
-        "bordeaux",
-        "rhone",
-        "bourgogne",
-        "burgundy",
-        "loire",
-        "jura",
-        "provance",
-        "languedoc",
-        "rosillion",
-        "alsace",
-        "italy",
-        "italien",
-        "tuscany",
-        "toskana",
-        "veneto",
-        "piemonte",
-        "spanien",
-        "spain",
-        "cava",
-        "rioja",
-        "ribera del duero"
+        "blåbär",
+        "jordgubb",
+        "plommon",
+        "körsbär",
+        "kaffe",
+        "viol",
+        "citron",
+        "citrus",
+        "smak",
+        "lime",
+        "blommor",
+        "mineral",
+        "sälta",
+        "vanilj",
+        "fat",
+        "ekfat",
+        "bär",
+        "lingon",
+        "tranbär",
+        "hallon",
+        "frukt",
+        "fylligt",
+        "medelfylligt",
+        "svartpeppar",
+        "choklad",
+        "friskt",
+        "kryddigt"
     };
 
-    public static string[] Regions =
+    public static IEnumerable<string> Regions = new []
     {
         "champagne",
         "bordeaux",
@@ -139,15 +156,15 @@ public static class ExcludedWords
         "toskana",
     };
 
-    public static string[] Replacements =
-    {
-        "Rose",
-        "Rosé",
-    };
+    //public static IEnumerable<string> Replacements = new []
+    //{
+    //    "Rose",
+    //    "Rosé",
+    //};
 
-    //public static string[] Grapes = RedGrapes.Union(GreenGrapes).ToArray();
 
-    public static string[] RedGrapes =
+
+    public static IEnumerable<string> RedGrapes = new []
     {
         "syrah",
         "shiraz",
@@ -178,12 +195,9 @@ public static class ExcludedWords
         "dolcetto",
         "gamay",
 
-        
-
-
     };
 
-    public static string[] GreenGrapes =
+    public static IEnumerable<string> GreenGrapes = new []
     {
         "riesling",
         "chardonnay",
@@ -204,5 +218,43 @@ public static class ExcludedWords
         "trebbiano"
 
 
+    };
+
+    public static IEnumerable<string> Grapes = RedGrapes.Concat(GreenGrapes);
+
+    public static IEnumerable<string> Classifications = new[]
+    {
+        "docg",
+        "doc"
+    };
+
+    public static IEnumerable<string> Irrelevants = new[]
+    {
+        "eco",
+        "ecological",
+        "ecologic",
+        "eko",
+        "ekologisk",
+        "ekologiskt",
+        "flaska",
+        "bottle",
+        "glas",
+        "glass"
+    };
+
+    public static IEnumerable<string> Noise = Singles
+        .Concat(Regions)
+        .Concat(Grapes);
+
+    public static IEnumerable<string> Replacements = Countries.Concat(Classifications).Concat(Irrelevants);
+
+    public static IEnumerable<string> NonWineSentences = new[]
+    {
+        "Valpolicella Ripasso",
+        "husets röda",
+        "pinot noir",
+        "Côtes-du-Rhône",
+        "Cotes-du-Rhone",
+        "cotes du rhone"
     };
 }
