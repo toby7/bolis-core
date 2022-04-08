@@ -5,27 +5,21 @@ namespace WineListComparer.Infra.Clients;
 
 public sealed class WineParser : IWineParser
 {
-    public async Task<string> Parse(string sentence)
+    public string Parse(string sentence)
     {
+        sentence = sentence.Trim();
+
         if (sentence.StartsWith('(') && sentence.EndsWith(')')) // sentence is wrapped by (). Presumably grape composition.
         {
-            return null;
+            return string.Empty;
         }
 
-        var isSingleWord = !sentence.Contains(' ');
-
-        if (isSingleWord)
+        if (IsNotValidSingleWord(sentence))
         {
-            if (Regex.IsMatch(sentence, @"^\d\d\d\d$")) // only vintage eg. "2016"
-            {
-                return string.Empty;
-            }
-            if (WineWordLibrary.Singles.Any(x => x.Equals(sentence, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return string.Empty;
-            }
-            // call
+            return string.Empty;
         }
+
+        sentence = sentence.Replace("(", "").Replace(")", ""); // Remove all parenthesis
 
         sentence = Regex.Replace( // Replace specific words with empty string, ex a country should not be present in the name.
             sentence,
@@ -63,7 +57,39 @@ public sealed class WineParser : IWineParser
             return string.Empty;
         }
 
+        if (IsNotValidSingleWord(sentence))
+        {
+            return string.Empty;
+        }
+
+        sentence = sentence.Replace("  ", " "); // replace any double whitespace
+
         return sentence;
+    }
+
+    private bool IsNotValidSingleWord(string sentence)
+    {
+        var isMultipleWords = sentence.Contains(' ');
+
+        if (isMultipleWords)
+        {
+            return false;
+        }
+
+        if (sentence.Length <= 3) // Is there a wine with only three characters or less? I'll take the risk
+        {
+            return true;
+        }
+        if (Regex.IsMatch(sentence, @"^\d\d\d\d$")) // only vintage eg. "2016"
+        {
+            return true;
+        }
+        if (WineWordLibrary.Singles.Any(x => x.Equals(sentence, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -77,6 +103,7 @@ public static class WineWordLibrary
         "fra",
         "italien",
         "italy",
+        "italia",
         "ita",
         "spanien",
         "spain",
@@ -172,7 +199,9 @@ public static class WineWordLibrary
         "arneis",
         "muscat",
         "pinot blanc",
-        "trebbiano"
+        "trebbiano",
+        "malvasia bianca",
+        "verdejo"
     };
 
     public static IEnumerable<string> Grapes = RedGrapes.Concat(GreenGrapes);
@@ -226,7 +255,11 @@ public static class WineWordLibrary
         "friskt",
         "kryddigt",
         "sött",
-        "mogen"
+        "mogen",
+        "lime",
+        "grape",
+        "grapefrukt",
+        "grapefruit"
 
     }.Concat(Grapes);
 
@@ -248,7 +281,11 @@ public static class WineWordLibrary
         "flaska",
         "bottle",
         "glas",
-        "glass"
+        "glass",
+        "kr",
+        "kronor",
+        "$",
+        "£"
     };
 
     public static IEnumerable<string> Replacements = Countries.Concat(Classifications).Concat(Irrelevants);

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using WineListComparer.Core.Clients;
 using WineListComparer.Core.Models;
 using WineListComparer.Core.Parsers;
@@ -34,7 +35,9 @@ public sealed class WineService : IWineService
 
     public async Task<WineResult> Process(Stream stream)
     {
+        logger.LogInformation("Starting to read image with OCR service.");
         var sentences = await ocrService.ReadImage(stream);
+        logger.LogInformation("Done reading image with OCR service.");
 
         if (sentences is null || sentences.Length < 1)
         {
@@ -45,45 +48,55 @@ public sealed class WineService : IWineService
                               $"{NewParagraph}" +
                               $"{string.Join(NewLine, sentences)}");
 
-        var parserTasks = sentences.Select(sentence => parser.Parse(sentence));
-        var searchSentences = (await Task.WhenAll(parserTasks)).Where(x => !string.IsNullOrWhiteSpace(x));
+        var parsedSentences = await Task.WhenAll(sentences.Select(sentence => Task.Run(() => parser.Parse(sentence))));
+        var searchSentences = parsedSentences
+            .Distinct()
+            .Where(sentence => !string.IsNullOrWhiteSpace(sentence))
+            .ToArray();
 
         logger.LogInformation($"Number of sentences after parsing: {searchSentences.Count()}." +
                               $"{NewParagraph}" +
                               $"{string.Join(NewLine, searchSentences)}");
 
-        var searchTasks = searchSentences.Take(20).Select(sentence => sbApiClient.SearchAsync(sentence));
-        var sbSearchResults = (await Task.WhenAll(searchTasks))
-            .Where(x => x.Products != null && x.Products.Any());
-
-        var sbSearchHits = sbSearchResults
-            .Select(searchResult => new SbHit()
+        var buildWineResultFromSentencesTasks = searchSentences.Take(50).Select(sentence => scoreScraper.Scrape(sentence).ContinueWith(async scoreTask =>
+        {
+            if (scoreTask.Result is null || string.IsNullOrWhiteSpace(scoreTask.Result.Score) || string.IsNullOrWhiteSpace(scoreTask.Result.Name))
             {
-                SearchSentence = searchResult.SearchSentence,
-                Product = searchResult.Products?.FirstOrDefault() ?? new Product()
-            });
+                return null;
+            }
 
-        var wineTasks = sbSearchHits
-            .Select(async hit => new Wine()
+            var wine = new Wine
             {
-                Name = $"{hit.Product.productNameBold} {hit.Product.productNameThin}",
-                Price = hit.Product.price.ToString(),
-                Vintage = hit.Product.vintage,
-                SearchSentence = hit.SearchSentence,
-                Volume = hit.Product.volume,
-                ProductNumber = hit.Product.productNumber,
-                Origin = new Origin()
-                {
-                    Country = hit.Product.country,
-                    Level1 = hit.Product.originLevel1,
-                    Level2 = hit.Product.categoryLevel2
-                },
-                Scores = new [] { await scoreScraper.Scrape(hit.SearchSentence) }
-            });
+                SearchSentence = sentence,
+                Name = scoreTask.Result.Name,
+                Scores = new [] { new WineScore() { Supplier = scoreScraper.Supplier, Score = scoreTask.Result.Score } }
+            };
 
-        var wines = await Task.WhenAll(wineTasks);
+            var sbSearchResult = await sbApiClient.SearchAsync(sentence);
+            if (sbSearchResult.Products is null || !sbSearchResult.Products.Any())
+            {
+                return null;
+            }
 
-        logger.LogInformation($"Number of hits from SB: {wines.Length}" +
+            var sbHit = sbSearchResult.Products[0];
+
+            wine.Price = sbHit.price.ToString();
+            wine.Vintage = sbHit.vintage;
+            wine.Volume = sbHit.volume;
+            wine.ProductNumber = sbHit.productNumber;
+            wine.Origin = new Origin()
+            {
+                Country = sbHit.country,
+                Level1 = sbHit.originLevel1,
+                Level2 = sbHit.categoryLevel2
+            };
+
+            return wine;
+        }).Unwrap());
+
+        var wines = (await Task.WhenAll(buildWineResultFromSentencesTasks)).Where(wine => wine is not null);
+
+        logger.LogInformation($"Number of hits: {wines.Count()}" +
                               $"{NewParagraph}" +
                               $"{string.Join(NewLine, wines.Select(x => x.Name))}");
 

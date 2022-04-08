@@ -2,5 +2,5 @@
 
 public interface IWineParser
 {
-    Task<string> Parse(string sentence);
+    string Parse(string sentence);
 }

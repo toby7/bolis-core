@@ -5,7 +5,7 @@ public class SbSearchResult
 {
     public string SearchSentence { get; set; }
     [JsonPropertyName("products")]
-    public Product[] Products { get; set; }
+    public Product[]? Products { get; set; }
     //public Metadata metadata { get; set; }
     //public Filter[] filters { get; set; }
     //public object[] filterMenuItems { get; set; }

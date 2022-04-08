@@ -21,6 +21,7 @@ public class ImageResizeMiddleware
         {
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             await httpContext.Response.WriteAsync("error");
+            return;
         }
 
         var form = await httpContext.Request.ReadFormAsync();
@@ -30,6 +31,7 @@ public class ImageResizeMiddleware
         {
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             await httpContext.Response.WriteAsync("file is null.");
+            return;
         }
 
         logger.LogInformation($"Received image with size {file.Length.ToMegabytes()} mb.");

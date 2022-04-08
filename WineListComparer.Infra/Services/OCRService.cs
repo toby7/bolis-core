@@ -18,7 +18,7 @@ public sealed class OCRService : IOCRService
     public async Task<string[]> ReadImage(Stream stream)
     {
         var client = Authenticate(settings.Endpoint, settings.Key);
-        // Extract text (OCR) from a URL image using the Read API
+
         return await ReadFile(client, stream);
     }
 
@@ -36,21 +36,14 @@ public sealed class OCRService : IOCRService
 
     private static async Task<string[]> ReadFile(ComputerVisionClient client, Stream stream)
     {
-        // Read text from URL
-        //await using var file = new FileStream(filePath, FileMode.Open);
         //var analysis = await client.AnalyzeImageInStreamAsync(file, new List<VisualFeatureTypes?>() { VisualFeatureTypes.Brands });
 
         var textHeaders = await client.ReadInStreamAsync(stream);
-
-        //var textHeaders = await client.ReadAsync(urlFile);
-        // After the request, get the operation location (operation ID)
-        string operationLocation = textHeaders.OperationLocation;
-        //Thread.Sleep(2000);
+        var operationLocation = textHeaders.OperationLocation;
 
         const int numberOfCharsInOperationId = 36;
         var operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
 
-        // Extract the text
         ReadOperationResult results;
 
         do
