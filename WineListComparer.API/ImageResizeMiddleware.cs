@@ -34,6 +34,11 @@ public class ImageResizeMiddleware
             return;
         }
 
+        if (file.Length.ToMegabytes() < 1.2)
+        {
+            await _next(httpContext);
+            return;
+        }
         logger.LogInformation($"Received image with size {file.Length.ToMegabytes()} mb.");
 
         var resizedStream = new MemoryStream();
