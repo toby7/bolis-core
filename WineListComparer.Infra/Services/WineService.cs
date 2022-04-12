@@ -69,7 +69,13 @@ public sealed class WineService : IWineService
             {
                 SearchSentence = sentence,
                 Name = scoreTask.Result.Name,
-                Scores = new [] { new WineScore() { Supplier = scoreScraper.Supplier, Score = scoreTask.Result.Score } }
+                Scores = new [] { new WineScore()
+                {
+                    Supplier = scoreScraper.Supplier,
+                    Score = scoreTask.Result.Score,
+                    VoteCount = scoreTask.Result.VoteCount
+                } },
+                ProductNumber = Guid.NewGuid().ToString()
             };
 
             var sbSearchResult = await sbApiClient.SearchAsync(sentence);
