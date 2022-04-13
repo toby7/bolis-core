@@ -133,7 +133,11 @@ public static class WineWordLibrary
         "jura",
         "languedoc",
         "rosillion",
+        "provence",
         "alsace",
+        "langeh",
+        "piemonte",
+        "etna",
         "tuscany",
         "toskana",
         "kalifornien",
@@ -297,7 +301,10 @@ public static class WineWordLibrary
         "pinot noir",
         "Côtes-du-Rhône",
         "Cotes-du-Rhone",
-        "cotes du rhone"
+        "cotes du rhone",
+        "Côtes du Rhône",
+        "etna rosso",
+        "etna bianco",
     };
 
     public static IEnumerable<string> Noise = Singles
