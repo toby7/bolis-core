@@ -41,6 +41,7 @@ public sealed class WineParser : IWineParser
         sentence = Regex.Replace(sentence, @"\(\d\d\d\d\)", "").Trim(); // Remove vintage, (2008)
         sentence = Regex.Replace(sentence, @"\d\d\d\d", "").Trim(); // Remove vintage, 2008
         sentence = Regex.Replace(sentence, @"\d*(:-| :-)", ""); // any digit followed by :-, eg. "245:-" or "245 :-"
+        sentence = Regex.Replace(sentence, @"\d*(sek| sek|kr| kr)", "", RegexOptions.IgnoreCase); // any digit followed by :-, eg. "245:-" or "245 :-"
 
         while (Regex.IsMatch(sentence, @"^[^A-Za-z]"))
         {
@@ -109,6 +110,13 @@ public static class WineWordLibrary
         "spain",
         "spa",
         "usa",
+        "tyskaland",
+        "germany",
+        "tys",
+        "ger",
+        "österrike",
+        "austria",
+        "öst",
         "australien",
         "australia",
         "aus",
@@ -119,7 +127,9 @@ public static class WineWordLibrary
         "argentine",
         "arg",
         "ungern",
-        "hungary"
+        "hungary",
+        "chile",
+        "che"
     };
 
     public static IEnumerable<string> Regions = new []
@@ -205,7 +215,10 @@ public static class WineWordLibrary
         "pinot blanc",
         "trebbiano",
         "malvasia bianca",
-        "verdejo"
+        "verdejo",
+        "Albariño",
+        "albarino",
+        "alvainho"
     };
 
     public static IEnumerable<string> Grapes = RedGrapes.Concat(GreenGrapes);
@@ -305,6 +318,9 @@ public static class WineWordLibrary
         "Côtes du Rhône",
         "etna rosso",
         "etna bianco",
+        "WHITE WIN",
+        "petit chablis",
+        "pinot gris réserve"
     };
 
     public static IEnumerable<string> Noise = Singles
