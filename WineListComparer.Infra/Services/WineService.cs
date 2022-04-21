@@ -58,47 +58,51 @@ public sealed class WineService : IWineService
                               $"{NewParagraph}" +
                               $"{string.Join(NewLine, searchSentences)}");
 
-        var buildWineResultFromSentencesTasks = searchSentences.Take(50).Select(sentence => scoreScraper.Scrape(sentence).ContinueWith(async scoreTask =>
-        {
-            if (scoreTask.Result is null || string.IsNullOrWhiteSpace(scoreTask.Result.Score) || string.IsNullOrWhiteSpace(scoreTask.Result.Name))
+        var buildWineResultFromSentencesTasks = searchSentences
+            .Take(50)
+            .Select(sentence => scoreScraper.Scrape(sentence).ContinueWith(async scoreTask =>
             {
-                return null;
-            }
-
-            var wine = new Wine
-            {
-                SearchSentence = sentence,
-                Name = scoreTask.Result.Name,
-                Scores = new [] { new WineScore()
+                var result = await scoreTask;
+                var noHitWasFound = string.IsNullOrWhiteSpace(result.Score) || string.IsNullOrWhiteSpace(result.Name);
+                if (noHitWasFound)
                 {
-                    Supplier = scoreScraper.Supplier,
-                    Score = scoreTask.Result.Score,
-                    VoteCount = scoreTask.Result.VoteCount
-                } },
-                ProductNumber = Guid.NewGuid().ToString()
-            };
+                    return null;
+                }
 
-            var sbSearchResult = await sbApiClient.SearchAsync(sentence);
-            if (sbSearchResult.Products is null || !sbSearchResult.Products.Any())
-            {
-                return null;
-            }
+                var wine = new Wine
+                {
+                    SearchSentence = sentence,
+                    Name = result.Name,
+                    Scores = new [] { new WineScore()
+                    {
+                        Supplier = scoreScraper.Supplier,
+                        Score = result.Score,
+                        VoteCount = result.VoteCount
+                    } },
+                    ProductNumber = Guid.NewGuid().ToString()
+                };
 
-            var sbHit = sbSearchResult.Products[0];
+                var sbSearchResult = await sbApiClient.SearchAsync(sentence);
+                if (sbSearchResult.Products is null || !sbSearchResult.Products.Any())
+                {
+                    return null;
+                }
 
-            wine.Price = sbHit.price.ToString();
-            wine.Vintage = sbHit.vintage;
-            wine.Volume = sbHit.volume;
-            wine.ProductNumber = sbHit.productNumber;
-            wine.Origin = new Origin()
-            {
-                Country = sbHit.country,
-                Level1 = sbHit.originLevel1,
-                Level2 = sbHit.categoryLevel2
-            };
+                var sbHit = sbSearchResult.Products[0];
 
-            return wine;
-        }).Unwrap());
+                wine.Price = sbHit.price.ToString();
+                wine.Vintage = sbHit.vintage;
+                wine.Volume = sbHit.volume;
+                wine.ProductNumber = sbHit.productNumber;
+                wine.Origin = new Origin()
+                {
+                    Country = sbHit.country,
+                    Level1 = sbHit.originLevel1,
+                    Level2 = sbHit.categoryLevel2
+                };
+
+                return wine;
+            }).Unwrap());
 
         var wines = (await Task.WhenAll(buildWineResultFromSentencesTasks)).Where(wine => wine is not null);
 
