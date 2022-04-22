@@ -2,7 +2,7 @@
 
 public class Wine
 {
-    public string Name { get; set; }
+    public string Name { get; init; }
     public string Vintage { get; set; }
     public string Price { get; set; }
     public string ProductNumber { get; set; }

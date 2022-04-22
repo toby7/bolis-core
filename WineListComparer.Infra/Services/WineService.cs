@@ -85,7 +85,7 @@ public sealed class WineService : IWineService
                 var sbSearchResult = await sbApiClient.SearchAsync(sentence);
                 if (sbSearchResult.Products is null || !sbSearchResult.Products.Any())
                 {
-                    return null;
+                    return wine;
                 }
 
                 var sbHit = sbSearchResult.Products[0];
