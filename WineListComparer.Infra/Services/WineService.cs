@@ -59,7 +59,7 @@ public sealed class WineService : IWineService
                               $"{string.Join(NewLine, searchSentences)}");
 
         var buildWineResultFromSentencesTasks = searchSentences
-            .Take(50)
+            .Take(49)
             .Select(sentence => scoreScraper.Scrape(sentence).ContinueWith(async scoreTask =>
             {
                 var result = await scoreTask;

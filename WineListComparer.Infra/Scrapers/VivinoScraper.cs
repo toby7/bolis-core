@@ -45,7 +45,7 @@ public sealed class VivinoScraper : IWineScoreScraper
             Supplier = this.Supplier,
             Name = htmlDoc.GetName(),
             Score = htmlDoc.GetScore(),
-            VoteCount = double.TryParse(htmlDoc.GetVotesCount(), out var count) ? count : 0,
+            VoteCount = htmlDoc.GetVotesCount(),
             RelativePath = htmlDoc.GetRelativePath()
         };
 
