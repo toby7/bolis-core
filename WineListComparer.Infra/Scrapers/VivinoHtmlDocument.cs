@@ -43,6 +43,7 @@ public class VivinoHtmlDocument : HtmlDocument
             .FirstOrDefault(x => x.HasClass("text-micro"))?
             .InnerText
             .Replace("betyg", "")
+            .Replace("ratings", "")
             .Trim() ?? string.Empty;
     }
 }
