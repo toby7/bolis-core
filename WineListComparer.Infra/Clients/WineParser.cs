@@ -311,6 +311,7 @@ public static class WineWordLibrary
     {
         "Valpolicella Ripasso",
         "husets röda",
+        "husets vita",
         "pinot noir",
         "Côtes-du-Rhône",
         "Cotes-du-Rhone",
@@ -318,7 +319,8 @@ public static class WineWordLibrary
         "Côtes du Rhône",
         "etna rosso",
         "etna bianco",
-        "WHITE WIN",
+        "WHITE WINE",
+        "RED WINE",
         "petit chablis",
         "pinot gris réserve"
     };

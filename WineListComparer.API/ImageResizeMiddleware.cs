@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp.Formats.Png;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using WineListComparer.Core.Extensions;
 
@@ -34,7 +35,7 @@ public class ImageResizeMiddleware
             return;
         }
 
-        if (file.Length.ToMegabytes() < 1.2)
+        if (file.Length.ToMegabytes() < 4)
         {
             await _next(httpContext);
             return;
@@ -43,13 +44,27 @@ public class ImageResizeMiddleware
 
         var resizedStream = new MemoryStream();
         await using var uploadStream = file.OpenReadStream();
-        using var image = await SixLabors.ImageSharp.Image.LoadAsync(uploadStream);
-        {
-            image.Mutate(x => x.Resize(1024, 768));
-            await image.SaveAsync(resizedStream, new PngEncoder());
-        }
 
-        resizedStream.Seek(0, SeekOrigin.Begin);
+        Func<Stream, Task> resize = async stream =>
+        {
+            using var image = await SixLabors.ImageSharp.Image.LoadAsync(stream);
+            {
+
+                image.Mutate(x => x.Resize(image.Width / 2, image.Height / 2));
+                await image.SaveAsync(resizedStream, new PngEncoder());
+                resizedStream.Seek(0, SeekOrigin.Begin);
+            }
+        };
+
+        await resize(uploadStream);
+
+        while (resizedStream.Length.ToMegabytes() > 4)
+        {
+            var newStream = resizedStream;
+            resizedStream = new MemoryStream();
+
+            await resize(newStream);
+        }
 
         logger.LogInformation($"Image size after resize: {resizedStream.Length.ToMegabytes()}");
 
